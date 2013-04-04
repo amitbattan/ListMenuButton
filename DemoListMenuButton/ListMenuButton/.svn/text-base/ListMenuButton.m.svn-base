@@ -1,0 +1,138 @@
+//
+//  ListMenuButton.m
+//  Starship
+//
+//  Created by Amit Battan on 03/07/12.
+//  Copyright (c) 2012 __MyCompanyName__. All rights reserved.
+//
+
+#import "ListMenuButton.h"
+
+@interface ListMenuButton(Private)
+- (IBAction) openList:(id)sender;
+@end
+
+
+@implementation ListMenuButton
+
+@synthesize listArray, delegate, listItemHeight, listWidth, selectedItem, updateButtonTitleOnChange, arrowDirection;
+
+-(id)init{
+    if (self=[super init]) {
+        selectedItem = nil;
+        listWidth = 150;
+        listItemHeight = 35;
+        updateButtonTitleOnChange = YES;
+        arrowDirection = UIPopoverArrowDirectionAny;
+        [self addTarget:self action:@selector(openList:) forControlEvents:UIControlEventTouchUpInside];
+    }
+    return self;
+}
+
+- (id) initWithList:(NSArray *)list delegate:(id<ListMenuDelegate>)aDelegate{
+    self = [self init];
+    delegate = aDelegate;
+    listArray = [[NSArray alloc] init];
+    listArray = [list copy];
+    [listTable reloadData];
+    
+    listTable = [[UITableView alloc] init];
+    listTable.delegate = self;
+    listTable.dataSource = self;
+    listTable.scrollEnabled = NO;
+    
+    return self;
+}
+
+- (IBAction) openList:(id)sender {
+    [starshipViewController.view endEditing:YES];
+    if ( [listArray count] == 0 ) {
+        if (self.delegate && [self.delegate respondsToSelector:@selector(listMenu:didSelectListItem:)]) {
+            [delegate listMenu:self didSelectListItem:nil];
+        }
+        return;
+    }
+
+    listTable.frame = CGRectMake(0, 0, listWidth, listItemHeight*[listArray count]-1);
+    
+//    UIViewController* popoverContent = [[UIViewController alloc] init];
+//    popoverContent.view = listTable;
+//    popoverContent.contentSizeForViewInPopover = CGSizeMake(listWidth, listItemHeight*[listArray count]);
+    if ( popoverContent == nil )
+    {
+        popoverContent = [[UIViewController alloc] init];
+        popoverContent.view = listTable;
+        popoverContent.contentSizeForViewInPopover = CGSizeMake(listWidth, listItemHeight*[listArray count]);
+    }
+
+    listPopOver = [[UIPopoverController alloc] initWithContentViewController:popoverContent];
+    [listPopOver setDelegate:self];
+    [listPopOver setPopoverContentSize:listTable.frame.size];
+    [listPopOver presentPopoverFromRect:self.frame inView:self.superview permittedArrowDirections:arrowDirection animated:YES];
+
+    [listTable reloadData];
+//	[popoverContent release];
+}
+
+#pragma mark UITableViewDataSource
+- (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
+{
+    return 1;
+}
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    return [listArray count];
+}
+
+-(CGFloat)tableView:(UITableView*)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return listItemHeight;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+	UITableViewCell *cell = nil;
+    
+    static NSString *kCellTextField_ID = @"CellTextField_ID";
+    cell = [tableView dequeueReusableCellWithIdentifier:kCellTextField_ID];
+    
+    if (cell == nil){
+        // a new cell needs to be created
+        cell = [[[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:kCellTextField_ID] autorelease];
+    }
+    cell.textLabel.textAlignment = UITextAlignmentCenter;
+    cell.textLabel.textColor = [UIColor blackColor];
+    cell.textLabel.font = [UIFont fontWithName:FontBold size:14];
+    cell.textLabel.backgroundColor = [UIColor colorWithRed:183.256f green:183.256f blue:183.256f alpha:1.0];
+    cell.textLabel.text = [[listArray objectAtIndex:indexPath.row] objectForKey:@"value"];
+    cell.textLabel.frame = cell.frame;
+    return cell;
+}
+
+- (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    cell.backgroundColor = [UIColor colorWithRed:(183/255.f) green:(183/255.f) blue:(183/255.f) alpha:1.0];
+//    cell.textLabel.backgroundColor = [UIColor colorWithRed:183.256f green:183.256f blue:183.256f alpha:1.0];
+}
+
+- (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{
+    if (updateButtonTitleOnChange) 
+        [self setTitle:[[listArray objectAtIndex:indexPath.row] objectForKey:@"value"] forState:UIControlStateNormal];
+        
+    selectedItem = [listArray objectAtIndex:indexPath.row];
+    [listPopOver dismissPopoverAnimated:YES];
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(listMenu:didSelectListItem:)]) {
+        [delegate listMenu:self didSelectListItem:[listArray objectAtIndex:indexPath.row]];
+    }
+}
+
+#pragma mark
+#pragma mark UIPopoverController Delegate Methods
+
+- (void)popoverControllerDidDismissPopover:(UIPopoverController *)popoverController{
+	[popoverController release];
+}
+
+@end
