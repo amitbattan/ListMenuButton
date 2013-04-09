@@ -54,9 +54,6 @@
 
     listTable.frame = CGRectMake(0, 0, listWidth, listItemHeight*[listArray count]-1);
     
-//    UIViewController* popoverContent = [[UIViewController alloc] init];
-//    popoverContent.view = listTable;
-//    popoverContent.contentSizeForViewInPopover = CGSizeMake(listWidth, listItemHeight*[listArray count]);
     if ( popoverContent == nil )
     {
         popoverContent = [[UIViewController alloc] init];
@@ -70,7 +67,6 @@
     [listPopOver presentPopoverFromRect:self.frame inView:self.superview permittedArrowDirections:arrowDirection animated:YES];
 
     [listTable reloadData];
-//	[popoverContent release];
 }
 
 #pragma mark UITableViewDataSource
@@ -112,7 +108,6 @@
 - (void)tableView:(UITableView *)tableView willDisplayCell:(UITableViewCell *)cell forRowAtIndexPath:(NSIndexPath *)indexPath
 {
     cell.backgroundColor = [UIColor colorWithRed:(183/255.f) green:(183/255.f) blue:(183/255.f) alpha:1.0];
-//    cell.textLabel.backgroundColor = [UIColor colorWithRed:183.256f green:183.256f blue:183.256f alpha:1.0];
 }
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath{

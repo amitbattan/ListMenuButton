@@ -16,7 +16,6 @@
     
     UIPopoverController *listPopOver;
     UIViewController* popoverContent;
-//    UIPopoverArrowDirectionAny
 }
 @property (nonatomic, assign) id<ListMenuDelegate> delegate;
 @property (readwrite, retain) NSArray *listArray;
